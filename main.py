@@ -2,18 +2,29 @@ import os
 import get_pass
 import send_email
 
-from datetime import date
+from datetime import datetime
+from dotenv import load_dotenv
 
-# simple environment variable detection
-assert(len(os.getenv('TROJAN_PASS_NETID')) != 0)
 
-output_image = 'trojan-pass-' + str(date.today()) + '.png'
+def do_the_job(str_today):
+    # load system environment variables
+    load_dotenv()
 
-next_test_remainder = get_pass.get_pass_and_remainder(output_image)
+    net_id = os.environ.get('TROJAN_PASS_NETID')
+    net_pw = os.environ.get('TROJAN_PASS_PASSWORD')
 
-send_email.send_from_gmail(os.getenv('TROJAN_PASS_NETID') + "@usc.edu",
-                           "Your Daily Trojan Pass",
-                           next_test_remainder + "\nHave a good day! XD",
-                           output_image,
-                           os.getenv('TROJAN_PASS_GMAIL_ACCOUNT'),
-                           os.getenv('TROJAN_PASS_GMAIL_PASSWORD'))
+    mail_account = os.environ.get('TROJAN_PASS_GMAIL_ACCOUNT')
+    mail_password = os.environ.get('TROJAN_PASS_GMAIL_PASSWORD')
+
+    next_test_remainder = get_pass.get_pass_and_remainder(net_id, net_pw, str_today)
+
+    send_email.send_from_gmail(net_id + "@usc.edu",
+                               "Your Daily Trojan Pass",
+                               next_test_remainder + "\nHave a good day! XD",
+                               str_today,
+                               mail_account,
+                               mail_password)
+
+
+if __name__ == '__main__':
+    do_the_job(datetime.today().strftime("%Y-%m-%d"))

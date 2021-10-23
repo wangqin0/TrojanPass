@@ -15,7 +15,8 @@ PORT = 465  # Gmail Outgoing Mail (SMTP) Server
 SMTP_SERVER = "smtp.gmail.com"
 
 
-def send_from_gmail(recipient, subject, body, attachment_filepath, account, password):
+def send_from_gmail(recipient, subject, body, str_today, account, password):
+    attachment_filepath = 'trojan-pass-' + str_today + '.png'
     # Create a multipart message and set headers
     message = MIMEMultipart()
     message["From"] = account
