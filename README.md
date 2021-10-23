@@ -16,7 +16,8 @@
 
 ### Install Prerequisites
 
-#### Ubuntu 20.04:
+#### Ubuntu 20.04
+
 ```shell
 # install Xvfb (X virtual framebuffer): an in-memory display server
 sudo apt update
@@ -44,9 +45,9 @@ Download the chrome and related chrome driver. Add the driver to path directory.
 
 #### Linux with Xvfb
 
-- Run once: `xvfb-run python3 <project root>/main.py` (for example: `xvfb-run python3 ~/TrojanPass/main.py`)
+- Run once: `xvfb-run python3 <project root>/main.py` (for example: `xvfb-run python3 ~/TrojanPass/main.py`), note that you need to manually set environment variables in `crontab -e`
 - Run every day: Execute `cron -e` in shell then add following line: `0 7 * * * xvfb-run python3 <project root>/main.py`, this will run task at 7:00 am every day
 
-#### Ubuntu
+#### macOS 11.6
 
 Run once: `python3 <project root>/main.py`

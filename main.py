@@ -4,6 +4,9 @@ import send_email
 
 from datetime import date
 
+# simple environment variable detection
+assert(len(os.getenv('TROJAN_PASS_NETID')) != 0)
+
 output_image = 'trojan-pass-' + str(date.today()) + '.png'
 
 next_test_remainder = get_pass.get_pass_and_remainder(output_image)
