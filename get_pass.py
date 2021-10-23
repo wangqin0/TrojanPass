@@ -1,120 +1,139 @@
+import datetime
 import os
 import logging
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-# recommend setting: Firefox headless or Chrome (without headless)
-def get_pass_and_remainder(output_image, firefox=True, headless=True):
-    # Requires Selenium WebDriver 3.13 or newer
-    logging.info("Attempt to run " + ("firefox" if firefox else "Chrome") + " with headless=" + str(headless))
+# Universal driver interface for Firefox or Chrome
+class Driver:
+    def __init__(self, firefox: bool = True, headless: bool = True):
+        if firefox:
+            options = webdriver.FirefoxOptions()
+            options.headless = headless
+            self.driver = webdriver.Firefox(options=options)
+        else:
+            options = webdriver.ChromeOptions()
+            if headless:
+                options.add_argument('--headless')
+            options.add_argument('--no-sandbox')
+            self.driver = webdriver.Chrome(options=options)
 
-    if firefox:
-        from selenium.webdriver.firefox.options import Options
-        options = Options()
-        options.headless = headless
-        browser_driver = webdriver.Firefox(options=options)
-    else:
-        from selenium.webdriver.chrome.options import Options
-        options = Options()
-        if headless:
-            options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        # options.add_argument('--disable-dev-shm-usage')
-        browser_driver = webdriver.Chrome(options=options)
+    def get(self, url: str):
+        self.driver.get(url)
 
-    with browser_driver as driver:
-        WebDriverWait(driver, 20)
+    def name(self) -> str:
+        return self.driver.name
 
-        # landing page
-        driver.get("https://trojancheck.usc.edu/login")
-        # driver.get
-        driver.find_element_by_xpath('/html/body/app-root/app-login/main/section/div/div[1]/div[1]/button').click()
-        driver.get_screenshot_as_file(output_image)
-        # login page
-        # wait(driver, 10)
-        NETID_field = WebDriverWait(driver, 20).until(
+    def ele_by_xpath(self, xpath: str) -> WebElement:
+        return self.driver.find_element_by_xpath(xpath)
+
+    def ele_by_id(self, _id: str) -> WebElement:
+        return self.driver.find_element_by_id(_id)
+
+    def ele_by_classname(self, class_name: str) -> WebElement:
+        return self.driver.find_elements_by_class_name(class_name)
+
+    def ele_with_wait(self, approach: By, locator: str, time_limit: int = 20) -> WebElement:
+        return WebDriverWait(self.driver, time_limit).until(
             expected_conditions.presence_of_element_located(
-                (By.ID, "username"))
+                (approach, locator))
         )
-        NETID_field.send_keys(os.getenv('TROJAN_PASS_NETID'))
-        driver.find_element_by_id('password').send_keys(os.getenv('TROJAN_PASS_PASSWORD'))
-        driver.find_element_by_xpath('//*[@id="loginform"]/div[4]/button').click()
 
-        # continue_button
-        WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button"))
-        ).click()
+    def current_url_ends(self, suffix: str) -> bool:
+        return str(self.driver.current_url).endswith(suffix)
 
-        # done this before, proceed to save
-        if len(driver.find_elements_by_class_name('day-pass-qr-code')) != 0:
+
+class Passer:
+    def __init__(self, net_id: str, net_pw: str, firefox: bool = True, headless: bool = True):
+        self.net_id = net_id
+        self.net_pw = net_pw
+        self.image_name = "Trojan-pass-" + datetime.datetime.today().strftime("%Y-%m-%d") + ".png"
+
+        # recommend setting: Firefox headless or Chrome (without headless)
+        self.driver = Driver(firefox, headless)
+
+    def get_pass_and_remainder(self):
+        logging.info(f"Attempt to run {self.driver.name()} with headless={self.headless}")
+
+        self.login()
+
+        if self.driver.ele_with_wait(By.ID, 'day-pass-qr-code'):
             logging.info("Have done wellness assessment today. Saving pass")
 
-            next_test_remainder = driver.find_element_by_xpath(
+            next_test_remainder = self.driver.ele_by_xpath(
                 '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
-            pass_element = driver.find_element_by_xpath(
+
+            pass_element = self.driver.ele_by_xpath(
                 # '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
                 '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass/div')
-            pass_element.screenshot(output_image)
+
+            pass_element.screenshot(self.image_name)
+
             return next_test_remainder
 
-        # prepare for begin_wellness_assessment
-        begin_wellness_assessment = WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '/html/body/app-root/app-dashboard/main/div/section[1]/div[2]/button'))
-        )
+        self.self_assessment()
 
-        begin_wellness_assessment.click()
-
-        # start_screening
-        WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '/html/body/app-root/app-assessment-start/main/section[1]/div[2]/button[2]'))
-        ).click()
-
-        # select No
-        for i in range(3, 6, 2):
-            WebDriverWait(driver, 20).until(
-                expected_conditions.presence_of_element_located(
-                    (By.XPATH, '//*[@id="mat-button-toggle-' + str(i) + '-button"]'))
-            ).click()
-
-        WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '/html/body/app-root/app-assessment-questions/main/section/section[3]/button'))
-        ).click()
-
-        # select No
-        for i in range(14, 27, 2):
-            WebDriverWait(driver, 20).until(
-                expected_conditions.presence_of_element_located(
-                    (By.XPATH, '//*[@id="mat-button-toggle-' + str(i) + '-button"]'))
-            ).click()
-
-        driver.find_element_by_xpath('/html/body/app-root/app-assessment-questions/main/section/section[8]/button').click()
-
-        WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '//*[@id="mat-checkbox-1-input"]'))
-        )
-
-        driver.find_element_by_xpath('//*[@id="mat-checkbox-1"]/label/div').click()
-
-        driver.find_element_by_xpath('/html/body/app-root/app-assessment-review/main/section/section[11]/button').click()
-
-        pass_element = WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass'))
-        )
+        pass_element = self.driver.ele_with_wait(By.XPATH,
+                                                 '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
 
         logging.info("Wellness assessment Completed. Saving pass")
 
-        next_test_remainder = driver.find_element_by_xpath(
+        next_test_remainder = self.driver.ele_by_xpath(
             '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
-        pass_element.screenshot(output_image)
+
+        pass_element.screenshot(self.image_name)
 
         return next_test_remainder
+
+    def login(self):
+        # Click the login-with-netID button
+        self.driver.ele_by_xpath('/html/body/app-root/app-login/main/section/div/div[1]/div[1]/button').click()
+
+        # Input net ID and password
+        net_id_field = self.driver.ele_with_wait(By.ID, "username")
+        net_id_field.send_keys(self.net_id)
+        self.driver.ele_by_id('password').send_keys(self.net_pw)
+        self.driver.ele_by_xpath('//*[@id="loginform"]/div[4]/button').click()
+
+        # Login Button
+        self.driver.ele_with_wait(By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button").click()
+        # Continue button
+        self.driver.ele_with_wait(By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button").click()
+
+    def self_assessment(self):
+        # prepare for begin_wellness_assessment
+        self.driver.ele_with_wait(By.XPATH,
+                                  '/html/body/app-root/app-dashboard/main/div/section[1]/div[2]/button').click()
+
+        # start_screening
+        self.driver.ele_with_wait(By.XPATH,
+                                  '/html/body/app-root/app-assessment-start/main/section[1]/div[2]/button[2]').click()
+
+        # select No
+        for i in range(3, 6, 2):
+            self.driver.ele_with_wait(By.XPATH, '//*[@id="mat-button-toggle-' + str(i) + '-button"]').click()
+
+        self.driver.ele_with_wait(By.XPATH,
+                                  '/html/body/app-root/app-assessment-questions/main/section/section[3]/button').click()
+
+        # select No
+        for i in range(14, 27, 2):
+            self.driver.ele_with_wait(By.XPATH, '//*[@id="mat-button-toggle-' + str(i) + '-button"]').click()
+
+        self.driver.ele_by_xpath(
+            '/html/body/app-root/app-assessment-questions/main/section/section[8]/button').click()
+
+        # finish assessment and wait loading page
+        self.driver.ele_by_xpath('//*[@id="mat-checkbox-1-input"]').click()
+
+        self.driver.ele_by_xpath('//*[@id="mat-checkbox-1"]/label/div').click()
+
+        self.driver.ele_by_xpath(
+            '/html/body/app-root/app-assessment-review/main/section/section[11]/button').click()
+
+
