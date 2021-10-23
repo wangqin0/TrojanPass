@@ -6,15 +6,17 @@
 
 - set your system environment variables:
   - Unix
-    - ZSH: `echo '\n# Trojan Pass\nexport TROJAN_PASS_NETID="<Your Net ID>"\nexport TROJAN_PASS_PASSWORD="<Your NetID password>"\nexport TROJAN_PASS_GMAIL_ACCOUNT="<Your Gmail Account>"\nexport TROJAN_PASS_GMAIL_PASSWORD="<Your Gmail Password>"' >> ~/.zshrc`
-    - Bash: `echo '\n# Trojan Pass\nexport TROJAN_PASS_NETID="<Your Net ID>"\nexport TROJAN_PASS_PASSWORD="<Your NetID password>"\nexport TROJAN_PASS_GMAIL_ACCOUNT="<Your Gmail Account>"\nexport TROJAN_PASS_GMAIL_PASSWORD="<Your Gmail Password>"' >> ~/.bash_profile`
+    - ZSH: `printf '\n# Trojan Pass\nexport TROJAN_PASS_NETID="<Your Net ID>"\nexport TROJAN_PASS_PASSWORD="<Your NetID password>"\nexport TROJAN_PASS_GMAIL_ACCOUNT="<Your Gmail Account>"\nexport TROJAN_PASS_GMAIL_PASSWORD="<Your Gmail Password>"' >> ~/.zshrc`
+    - Bash: `printf '\n# Trojan Pass\nexport TROJAN_PASS_NETID="<Your Net ID>"\nexport TROJAN_PASS_PASSWORD="<Your NetID password>"\nexport TROJAN_PASS_GMAIL_ACCOUNT="<Your Gmail Account>"\nexport TROJAN_PASS_GMAIL_PASSWORD="<Your Gmail Password>"' >> ~/.bash_profile` (or `>> ~/.bashrc`)
+    - Note: use `echo` in macOS and `printf` on Linux
     - For example, on macOS 11.6, suppose the NET ID is `wq`, password is `foo`, Gmail account is `wangqin0.me@gmail.com`, Gmail password is `fool` open the Terminal and execute `echo '\n# Trojan Pass\nexport TROJAN_PASS_NETID="wq"\nexport TROJAN_PASS_PASSWORD="foo"\nexport TROJAN_PASS_GMAIL_ACCOUNT="wangqin0.me@gmail.com"\nexport TROJAN_PASS_GMAIL_PASSWORD="fool"' >> ~/.zshrc` 
   - Windows
-    - Not sure
+    - I don't use Windows, maybe you can take look at [about_Environment_Variables](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables) in Microsoft Docs
   - Notice that `<>` is NOT in the actual command; for security concerns, please don't hard code your password into the program
 
 ### Install Prerequisites
 
+#### Ubuntu 20.04:
 ```shell
 # install Xvfb (X virtual framebuffer): an in-memory display server
 sudo apt update
@@ -34,7 +36,17 @@ wget https://chromedriver.storage.googleapis.com/95.0.4638.17/chromedriver_linux
 sudo mv chromedriver /usr/bin/chromedriver
 ```
 
-## Further Automation
+#### macOS 11.6
 
-### Use Cron
+Download the chrome and related chrome driver. Add the driver to path directory.  
 
+### Run task
+
+#### Linux with Xvfb
+
+- Run once: `xvfb-run python3 <project root>/main.py` (for example: `xvfb-run python3 ~/TrojanPass/main.py`)
+- Run every day: Execute `cron -e` in shell then add following line: `0 7 * * * xvfb-run python3 <project root>/main.py`, this will run task at 7:00 am every day
+
+#### Ubuntu
+
+Run once: `python3 <project root>/main.py`

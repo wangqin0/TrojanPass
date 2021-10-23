@@ -12,7 +12,8 @@ def get_pass_and_remainder(output_image):
     # Requires Selenium WebDriver 3.13 or newer
 
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--no-sandbox')
+    # chrome_options.add_argument('--disable-dev-shm-usage')
 
     # if you want to use Firefox for automation then uncomment the line below:
     # with webdriver.Firefox() as driver:
@@ -23,7 +24,7 @@ def get_pass_and_remainder(output_image):
         driver.get("https://trojancheck.usc.edu/login")
         # driver.get
         driver.find_element_by_xpath('/html/body/app-root/app-login/main/section/div/div[1]/div[1]/button').click()
-
+        driver.get_screenshot_as_file(output_image)
         # login page
         # wait(driver, 10)
         NETID_field = WebDriverWait(driver, 20).until(
@@ -51,11 +52,7 @@ def get_pass_and_remainder(output_image):
             next_test_remainder = driver.find_element_by_xpath(
                 '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
             pass_element = driver.find_element_by_xpath(
-                # '/html/body/app-root/app-dashboard/main/div/section[1]')              # Pass with outer div
-                # '/html/body/app-root/app-dashboard/main/div/section[1]/div')          # Pass with outer div
-                # '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]')     # Pass with outer wrapper
-                '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')      # Pass
-                # '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass/div')  # Pass
+                '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
             pass_element.screenshot(output_image)
             return next_test_remainder
 
