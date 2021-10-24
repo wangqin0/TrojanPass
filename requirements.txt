@@ -1,3 +1,3 @@
-selenium~=3.141.0
-apscheduler~=3.7.0
-python-dotenv~=0.19.1
+selenium
+apscheduler
+python-dotenv
