@@ -1,19 +1,16 @@
 import os
 
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotVisibleException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-
-from selenium.webdriver.chrome.options import Options
 
 
 def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
     # Requires Selenium WebDriver 3.13 or newer
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
     # chrome_options.add_argument('--disable-dev-shm-usage')
@@ -22,8 +19,6 @@ def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
     # if you want to use Firefox for automation then uncomment the line below:
     # with webdriver.Firefox() as driver:
     with webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options) as driver:
-        WebDriverWait(driver, 20)
-
         # landing page
         driver.get("https://trojancheck.usc.edu/dashboard")
 
@@ -33,16 +28,18 @@ def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
 
         # needs self assessment
         try:
-            WebDriverWait(driver, 10).until(
+            WebDriverWait(driver, 5).until(
                 expected_conditions.presence_of_element_located(
                     (By.CLASS_NAME, 'day-pass-qr-code-box'))
             )
         except Exception:
             self_assessment(driver)
         finally:
-            next_test_remainder = driver.find_element_by_xpath(
-                '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
-            store_image(driver, image_name)
+            next_test_remainder = WebDriverWait(driver, 20).until(
+                expected_conditions.presence_of_element_located(
+                    (By.XPATH, '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]'))
+            ).text
+            store_image(driver,image_name)
             return next_test_remainder
 
 
@@ -97,15 +94,11 @@ def self_assessment(driver):
     driver.find_element_by_xpath(
         '/html/body/app-root/app-assessment-questions/main/section/section[8]/button').click()
 
-    # finish assessment and wait loading page
-    wait_and_find('//*[@id="mat-checkbox-1-input"]').click()
-
     driver.find_element_by_xpath('//*[@id="mat-checkbox-1"]/label/div').click()
 
     driver.find_element_by_xpath(
         '/html/body/app-root/app-assessment-review/main/section/section[11]/button').click()
 
-    driver.get('https://trojancheck.usc.edu/dashboard')
 
 
 # Pre: now at '/dashboard'
