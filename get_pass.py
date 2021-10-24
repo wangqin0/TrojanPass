@@ -11,14 +11,17 @@ from selenium.webdriver.chrome.options import Options
 
 def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
     # Requires Selenium WebDriver 3.13 or newer
-    chrome_options = Options()
-    chrome_options.add_argument('--no-sandbox')
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
     # chrome_options.add_argument('--disable-dev-shm-usage')
 
     image_name = 'trojan-pass-' + str_today + '.png'
     # if you want to use Firefox for automation then uncomment the line below:
     # with webdriver.Firefox() as driver:
-    with webdriver.Chrome(chrome_options=chrome_options) as driver:
+    with webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options) as driver:
         WebDriverWait(driver, 20)
 
         # landing page
@@ -34,7 +37,7 @@ def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
                 expected_conditions.presence_of_element_located(
                     (By.CLASS_NAME, 'day-pass-qr-code-box'))
             )
-        except ElementNotVisibleException:
+        except Exception:
             self_assessment(driver)
         finally:
             next_test_remainder = driver.find_element_by_xpath(
