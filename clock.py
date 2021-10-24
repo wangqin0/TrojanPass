@@ -13,3 +13,6 @@ def scheduled_job():
     print(str_today)
 
     do_the_job(str_today)
+
+
+sched.start()
