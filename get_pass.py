@@ -39,7 +39,7 @@ def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
                 expected_conditions.presence_of_element_located(
                     (By.XPATH, '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]'))
             ).text
-            store_image(driver,image_name)
+            store_image(driver, image_name)
             return next_test_remainder
 
 
@@ -98,7 +98,6 @@ def self_assessment(driver):
 
     driver.find_element_by_xpath(
         '/html/body/app-root/app-assessment-review/main/section/section[11]/button').click()
-
 
 
 # Pre: now at '/dashboard'
