@@ -1,4 +1,5 @@
 import os
+import logging
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,6 +11,8 @@ from selenium.webdriver.chrome.options import Options
 
 def get_pass_and_remainder(output_image):
     # Requires Selenium WebDriver 3.13 or newer
+
+    logging.debug("Attempt to run Chrome with options")
 
     chrome_options = Options()
     chrome_options.add_argument('--no-sandbox')
@@ -49,6 +52,8 @@ def get_pass_and_remainder(output_image):
 
         # done this before, proceed to save
         if len(driver.find_elements_by_class_name('day-pass-qr-code-box')) != 0:
+            logging.info("Have done wellness assessment today. Saving pass")
+
             next_test_remainder = driver.find_element_by_xpath(
                 '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
             pass_element = driver.find_element_by_xpath(
@@ -98,6 +103,8 @@ def get_pass_and_remainder(output_image):
             expected_conditions.presence_of_element_located(
                 (By.XPATH, '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass'))
         )
+
+        logging.info("Wellness assessment Completed. Saving pass")
 
         next_test_remainder = driver.find_element_by_xpath(
             '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text

@@ -1,4 +1,13 @@
+# Project Specific
+saved_passes/
 trojan-pass-*.png
+
+# IntelliJ
 .idea/
+
+# venv
 venv/
+.venv/
+
+# Python
 __pycache__/

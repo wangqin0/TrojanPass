@@ -1,5 +1,9 @@
 # TrojanPass
 
+Tired of Trojan Check every day? You need this. TrojanPass will automate the process of wellness assessment and send the pass to your mailbox. 
+
+You can use cron to schedule TrojanCheck, making your life easier. 
+
 ## Project Setup
 
 ### Environment Variables
