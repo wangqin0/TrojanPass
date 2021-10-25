@@ -1,4 +1,4 @@
-trojan-pass-*.png
+*.png
 .idea/
 venv/
 __pycache__/

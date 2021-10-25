@@ -28,6 +28,7 @@ def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
 
         # needs self assessment
         try:
+            driver.save_screenshot("after-login.png")
             WebDriverWait(driver, 5).until(
                 expected_conditions.presence_of_element_located(
                     (By.CLASS_NAME, 'day-pass-qr-code-box'))
