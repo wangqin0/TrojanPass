@@ -2,40 +2,57 @@ import logging
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
 
 def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
-    options = webdriver.FirefoxOptions()
-    options.headless = True
     image_name = 'trojan-pass-' + str_today + '.png'
-    with webdriver.Firefox(executable_path=os.environ.get('GECKODRIVER_PATH'),
-                           firefox_binary=os.environ.get('FIREFOX_BIN'), options=options) as driver:
-        # landing page
-        driver.get("https://trojancheck.usc.edu/dashboard")
+    driver = load_driver()
+    # landing page
+    driver.get("https://trojancheck.usc.edu/dashboard")
 
-        # needs login
-        if url_ends_with(driver, 'login'):
-            login(driver, net_id, net_pw)
-            driver.save_screenshot("after-login.png")
+    # needs login
+    if url_ends_with(driver, 'login'):
+        login(driver, net_id, net_pw)
+        driver.save_screenshot("after-login.png")
 
-        # needs self assessment
-        try:
-            WebDriverWait(driver, 5).until(
-                expected_conditions.presence_of_element_located(
-                    (By.CLASS_NAME, 'day-pass-qr-code-box'))
-            )
-        except Exception:
-            driver.save_screenshot("before-assessment.png")
-            self_assessment(driver)
-        finally:
-            next_test_remainder = WebDriverWait(driver, 20).until(
-                expected_conditions.presence_of_element_located(
-                    (By.XPATH, '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]'))
-            ).text
-            store_image(driver, image_name)
-            return next_test_remainder
+    # needs self assessment
+    try:
+        WebDriverWait(driver, 5).until(
+            expected_conditions.presence_of_element_located(
+                (By.CLASS_NAME, 'day-pass-qr-code-box'))
+        )
+    except Exception:
+        driver.save_screenshot("before-assessment.png")
+        self_assessment(driver)
+    finally:
+        next_test_remainder = WebDriverWait(driver, 20).until(
+            expected_conditions.presence_of_element_located(
+                (By.XPATH, '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]'))
+        ).text
+        store_image(driver, image_name)
+        return next_test_remainder
+
+
+def load_driver():
+    options = webdriver.FirefoxOptions()
+
+    # enable trace level for debugging
+    options.log.level = "trace"
+
+    options.add_argument("-remote-debugging-port=9224")
+    options.add_argument("-headless")
+    options.add_argument("-disable-gpu")
+    options.add_argument("-no-sandbox")
+
+    binary = FirefoxBinary(os.environ.get('FIREFOX_BIN'))
+
+    driver = webdriver.Firefox(executable_path=os.environ.get('GECKODRIVER_PATH'),
+                               firefox_binary=binary, options=options)
+
+    return driver
 
 
 def url_ends_with(driver, suffix: str):
