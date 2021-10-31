@@ -21,7 +21,7 @@ First, in the project root, run `./heroku_deploy.sh`, then set environment varia
 heroku config:set TROJAN_PASS_NETID=<Your Net ID>
 heroku config:set TROJAN_PASS_PASSWORD=<Your NetID password>
 heroku config:set TROJAN_PASS_GMAIL_ACCOUNT=<Your Gmail Account>
-heroku config:set TROJAN_PASS_GMAIL_PASSWORD=\<Your Gmail Password>
+heroku config:set TROJAN_PASS_GMAIL_PASSWORD=<Your Gmail Password>
 ```
 
 Last, deploy and trigger the build:

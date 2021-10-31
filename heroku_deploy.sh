@@ -16,6 +16,6 @@ What you need to do next - run the following command:
 heroku config:set TROJAN_PASS_NETID=<Your Net ID>
 heroku config:set TROJAN_PASS_PASSWORD=<Your NetID password>
 heroku config:set TROJAN_PASS_GMAIL_ACCOUNT=<Your Gmail Account>
-heroku config:set TROJAN_PASS_GMAIL_PASSWORD=\<Your Gmail Password>
+heroku config:set TROJAN_PASS_GMAIL_PASSWORD=<Your Gmail Password>
 git add . && git commit -m "trigger deploy" && git push heroku main
 "
