@@ -11,11 +11,12 @@ heroku addons:create scheduler:standard
 heroku config:set PATH=/usr/local/bin:/usr/bin:/bin:/app/vendor/:/app/vendor/firefox/:/app/vendor/geckodriver
 heroku buildpacks:add https://github.com/ronnielivingsince1994/heroku-integrated-firefox-geckodriver
 
-echo "
+echo '
 What you need to do next - run the following command:
-heroku config:set TROJAN_PASS_NETID=<Your Net ID>
-heroku config:set TROJAN_PASS_PASSWORD=<Your NetID password>
-heroku config:set TROJAN_PASS_GMAIL_ACCOUNT=<Your Gmail Account>
-heroku config:set TROJAN_PASS_GMAIL_PASSWORD=<Your Gmail Password>
-git add . && git commit -m "trigger deploy" && git push heroku main
-"
+  heroku config:set TROJAN_PASS_NETID=<Your Net ID>
+  heroku config:set TROJAN_PASS_PASSWORD=<Your NetID password>
+  heroku config:set TROJAN_PASS_GMAIL_ACCOUNT=<Your Gmail Account>
+  heroku config:set TROJAN_PASS_GMAIL_PASSWORD=<Your Gmail Password>
+
+  git add . && git commit  --allow-empty  -m "trigger deploy" && git push heroku main
+'
