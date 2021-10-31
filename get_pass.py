@@ -1,5 +1,5 @@
+import logging
 import os
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
@@ -7,24 +7,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
-    # Requires Selenium WebDriver 3.13 or newer
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument('--disable-dev-shm-usage')
-
+    options = webdriver.FirefoxOptions()
+    options.headless = True
+    options.binary = os.environ.get('FIREFOX_BIN')
     image_name = 'trojan-pass-' + str_today + '.png'
-    # if you want to use Firefox for automation then uncomment the line below:
-    # with webdriver.Firefox() as driver:
-    with webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options) as driver:
+    with webdriver.Firefox(executable_path=os.environ.get('GECKODRIVER_PATH'), options=options) as driver:
         # landing page
         driver.get("https://trojancheck.usc.edu/dashboard")
 
         # needs login
         if url_ends_with(driver, 'login'):
             login(driver, net_id, net_pw)
+            driver.save_screenshot("after-login.png")
 
         # needs self assessment
         try:
@@ -33,6 +27,7 @@ def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
                     (By.CLASS_NAME, 'day-pass-qr-code-box'))
             )
         except Exception:
+            driver.save_screenshot("before-assessment.png")
             self_assessment(driver)
         finally:
             next_test_remainder = WebDriverWait(driver, 20).until(
@@ -50,6 +45,7 @@ def url_ends_with(driver, suffix: str):
 # Pre: now at '/login' page.
 def login(driver, net_id, net_pw):
     # Click the login-with-netID button
+    logging.info('Before login, net id: ' + net_id)
     driver.find_element_by_xpath('/html/body/app-root/app-login/main/section/div/div[1]/div[1]/button').click()
 
     # Input net ID and password
@@ -62,6 +58,7 @@ def login(driver, net_id, net_pw):
     driver.find_element_by_xpath('//*[@id="loginform"]/div[4]/button').click()
 
     # Continue button
+    logging.info('After login, assume the Continue button shows.')
     WebDriverWait(driver, 20).until(
         expected_conditions.presence_of_element_located(
             (By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button"))
@@ -76,6 +73,7 @@ def self_assessment(driver):
         )
 
     # prepare for begin_wellness_assessment
+    logging.info('Before assessment.')
     wait_and_find('/html/body/app-root/app-dashboard/main/div/section[1]/div[2]/button').click()
 
     # start_screening
