@@ -1,7 +1,6 @@
 # Project Specific
 saved_passes/
-trojan-pass-*.png
-geckodriver*
+*.log
 
 # IntelliJ
 .idea/
@@ -12,6 +11,7 @@ venv/
 
 # Python
 __pycache__/
+.env
 
 # macOS
 .DS_Store
