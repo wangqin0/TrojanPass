@@ -9,9 +9,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
     options = webdriver.FirefoxOptions()
     options.headless = True
-    options.binary = os.environ.get('FIREFOX_BIN')
     image_name = 'trojan-pass-' + str_today + '.png'
-    with webdriver.Firefox(executable_path=os.environ.get('GECKODRIVER_PATH'), options=options) as driver:
+    with webdriver.Firefox(executable_path=os.environ.get('GECKODRIVER_PATH'),
+                           firefox_binary=os.environ.get('FIREFOX_BIN'), options=options) as driver:
         # landing page
         driver.get("https://trojancheck.usc.edu/dashboard")
 
