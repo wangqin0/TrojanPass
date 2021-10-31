@@ -8,17 +8,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 def get_pass_and_remainder(net_id, net_pw, str_today) -> str:
     # Requires Selenium WebDriver 3.13 or newer
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument('--disable-dev-shm-usage')
+    options = webdriver.FirefoxOptions()
+    options.headless = True
 
     image_name = 'trojan-pass-' + str_today + '.png'
-    # if you want to use Firefox for automation then uncomment the line below:
-    # with webdriver.Firefox() as driver:
-    with webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options) as driver:
+    with webdriver.Firefox(options=options) as driver:
         # landing page
         driver.get("https://trojancheck.usc.edu/dashboard")
 
