@@ -1,6 +1,7 @@
 import os
 import smtplib
 import ssl
+import logging
 
 from email import encoders
 from email.mime.base import MIMEBase
@@ -47,8 +48,12 @@ def send_from_gmail(recipient, subject, body, str_today, account, password):
     message.attach(part)
     text = message.as_string()
 
+    logging.debug("Mail constructed, now sending")
+
     # Log in to server using secure context and send email
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(account, password)
         server.sendmail(message["From"], message["To"], text)
+
+    logging.debug("Mail sent")
