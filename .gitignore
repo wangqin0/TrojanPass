@@ -1,6 +1,17 @@
-*.png
+# Project Specific
+saved_passes/
 *.log
+
+# IntelliJ
 .idea/
+
+# venv
 venv/
+.venv/
+
+# Python
 __pycache__/
 .env
+
+# macOS
+.DS_Store
