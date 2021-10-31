@@ -1,5 +1,3 @@
-import datetime
-import os
 import logging
 
 from selenium import webdriver
@@ -7,11 +5,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+from utils import str_image
 
 
 # Universal driver interface for Firefox or Chrome
 class Driver:
     def __init__(self, firefox: bool = True, headless: bool = True):
+        self.headless = headless
+
         if firefox:
             options = webdriver.FirefoxOptions()
             options.headless = headless
@@ -38,7 +39,7 @@ class Driver:
     def ele_by_classname(self, class_name: str) -> WebElement:
         return self.driver.find_elements_by_class_name(class_name)
 
-    def ele_with_wait(self, approach: By, locator: str, time_limit: int = 20) -> WebElement:
+    def ele_with_wait(self, approach: By, locator: str, time_limit: int = 5) -> WebElement:
         return WebDriverWait(self.driver, time_limit).until(
             expected_conditions.presence_of_element_located(
                 (approach, locator))
@@ -49,20 +50,21 @@ class Driver:
 
 
 class Passer:
-    def __init__(self, net_id: str, net_pw: str, firefox: bool = True, headless: bool = True):
+    def __init__(self, net_id: str, net_pw: str, driver=None, image_name: str = None, firefox: bool = True,
+                 headless: bool = True):
         self.net_id = net_id
         self.net_pw = net_pw
-        self.image_name = "Trojan-pass-" + datetime.datetime.today().strftime("%Y-%m-%d") + ".png"
+        self.image_name = image_name or str_image(net_id)
 
         # recommend setting: Firefox headless or Chrome (without headless)
-        self.driver = Driver(firefox, headless)
+        self.driver = driver or Driver(firefox, headless)
 
-    def get_pass_and_remainder(self):
-        logging.info(f"Attempt to run {self.driver.name()} with headless={self.headless}")
+    def get_pass_and_reminder(self):
+        logging.info(f"Attempt to run {self.driver.name()} with headless={self.driver.headless}")
 
         self.login()
 
-        if self.driver.ele_with_wait(By.ID, 'day-pass-qr-code'):
+        if self.driver.ele_by_classname('day-pass-qr-code'):
             logging.info("Have done wellness assessment today. Saving pass")
 
             next_test_remainder = self.driver.ele_by_xpath(
@@ -91,17 +93,18 @@ class Passer:
         return next_test_remainder
 
     def login(self):
+        self.driver.get('https://trojancheck.usc.edu/login')
+
         # Click the login-with-netID button
         self.driver.ele_by_xpath('/html/body/app-root/app-login/main/section/div/div[1]/div[1]/button').click()
 
         # Input net ID and password
-        net_id_field = self.driver.ele_with_wait(By.ID, "username")
-        net_id_field.send_keys(self.net_id)
+        self.driver.ele_with_wait(By.ID, "username").send_keys(self.net_id)
         self.driver.ele_by_id('password').send_keys(self.net_pw)
-        self.driver.ele_by_xpath('//*[@id="loginform"]/div[4]/button').click()
 
         # Login Button
-        self.driver.ele_with_wait(By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button").click()
+        self.driver.ele_by_xpath('//*[@id="loginform"]/div[4]/button').click()
+
         # Continue button
         self.driver.ele_with_wait(By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button").click()
 
@@ -135,5 +138,3 @@ class Passer:
 
         self.driver.ele_by_xpath(
             '/html/body/app-root/app-assessment-review/main/section/section[11]/button').click()
-
-
