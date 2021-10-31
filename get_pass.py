@@ -6,21 +6,27 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
-from selenium.webdriver.chrome.options import Options
 
-
-def get_pass_and_remainder(output_image):
+# recommend setting: Firefox headless or Chrome (without headless)
+def get_pass_and_remainder(output_image, firefox=True, headless=True):
     # Requires Selenium WebDriver 3.13 or newer
+    logging.info("Attempt to run " + ("firefox" if firefox else "Chrome") + " with headless=" + str(headless))
 
-    logging.debug("Attempt to run Chrome with options")
+    if firefox:
+        from selenium.webdriver.firefox.options import Options
+        options = Options()
+        options.headless = headless
+        browser_driver = webdriver.Firefox(options=options)
+    else:
+        from selenium.webdriver.chrome.options import Options
+        options = Options()
+        if headless:
+            options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        # options.add_argument('--disable-dev-shm-usage')
+        browser_driver = webdriver.Chrome(options=options)
 
-    chrome_options = Options()
-    chrome_options.add_argument('--no-sandbox')
-    # chrome_options.add_argument('--disable-dev-shm-usage')
-
-    # if you want to use Firefox for automation then uncomment the line below:
-    # with webdriver.Firefox() as driver:
-    with webdriver.Chrome(chrome_options=chrome_options) as driver:
+    with browser_driver as driver:
         WebDriverWait(driver, 20)
 
         # landing page
@@ -44,22 +50,23 @@ def get_pass_and_remainder(output_image):
                 (By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button"))
         ).click()
 
-        # prepare for begin_wellness_assessment
-        begin_wellness_assessment = WebDriverWait(driver, 20).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '/html/body/app-root/app-dashboard/main/div/section[1]/div[2]/button'))
-        )
-
         # done this before, proceed to save
-        if len(driver.find_elements_by_class_name('day-pass-qr-code-box')) != 0:
+        if len(driver.find_elements_by_class_name('day-pass-qr-code')) != 0:
             logging.info("Have done wellness assessment today. Saving pass")
 
             next_test_remainder = driver.find_element_by_xpath(
                 '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
             pass_element = driver.find_element_by_xpath(
-                '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
+                # '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
+                '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass/div')
             pass_element.screenshot(output_image)
             return next_test_remainder
+
+        # prepare for begin_wellness_assessment
+        begin_wellness_assessment = WebDriverWait(driver, 20).until(
+            expected_conditions.presence_of_element_located(
+                (By.XPATH, '/html/body/app-root/app-dashboard/main/div/section[1]/div[2]/button'))
+        )
 
         begin_wellness_assessment.click()
 

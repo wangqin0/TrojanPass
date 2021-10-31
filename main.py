@@ -18,6 +18,7 @@ logging.debug('TrojanPass started in dir="' + str(Path.cwd()) + '", output_image
 if 'TROJAN_PASS_NETID' not in os.environ:
     logging.error("TROJAN_PASS_NETID not found in environment variables, aborting!")
     logging.error("It is possible that you're using crontab and this requires further setup")
+    exit(1)
 
 if not Path(DIR_NAME).exists():
     Path(DIR_NAME).mkdir(parents=True, exist_ok=False)
