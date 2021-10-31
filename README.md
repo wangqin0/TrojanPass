@@ -32,6 +32,8 @@ Last, deploy and trigger the build:
 git add . && git commit --allow-empty -m "trigger deploy" && git push heroku main
 ```
 
+To get the pass, run `heroku run get_pass` inside your heroku project. 
+
 #### Optional: Add daily job
 
 Select your 'trojan-pass-<random number>' project in [Heroku dashboard](https://dashboard.heroku.com), then click `Heroku Scheduler` in `Installed add-ons`. 
