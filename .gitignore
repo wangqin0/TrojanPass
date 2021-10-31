@@ -1,7 +1,6 @@
 # Project Specific
 saved_passes/
-trojan-pass-*.png
-geckodriver*
+*.log
 
 # IntelliJ
 .idea/

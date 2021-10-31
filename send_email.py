@@ -16,8 +16,7 @@ PORT = 465  # Gmail Outgoing Mail (SMTP) Server
 SMTP_SERVER = "smtp.gmail.com"
 
 
-def send_from_gmail(recipient, subject, body, str_today, account, password):
-    attachment_filepath = 'trojan-pass-' + str_today + '.png'
+def send_from_gmail(recipient: str, subject: str, body: str, image_dir: str, account: str, password: str):
     # Create a multipart message and set headers
     message = MIMEMultipart()
     message["From"] = account
@@ -29,7 +28,7 @@ def send_from_gmail(recipient, subject, body, str_today, account, password):
     message.attach(MIMEText(body, "plain"))
 
     # Open PDF file in binary mode
-    with open(attachment_filepath, "rb") as attachment:
+    with open(image_dir, "rb") as attachment:
         # Add file as application/octet-stream
         # Email client can usually download this automatically as attachment
         part = MIMEBase("application", "octet-stream")
@@ -41,7 +40,7 @@ def send_from_gmail(recipient, subject, body, str_today, account, password):
     # Add header as key/value pair to attachment part
     part.add_header(
         "Content-Disposition",
-        f"attachment; filename= {attachment_filepath}",
+        f"attachment; filename= {image_dir}",
     )
 
     # Add attachment to message and convert message to string
