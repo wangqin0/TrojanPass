@@ -46,10 +46,10 @@ def main():
             image_name = str_image(net_id)
         except IncorrectPasswordError as e:
             logging.error(e.message)
-            content = "Your given password may be wrong, we cannot do trojan check for you."
+            content = "Your given password may be wrong, we cannot do Trojan Check for you."
         except SelfAssessmentNotCompliantError as e:
             logging.error(e.message)
-            content = "We failed to de self assessment for you.\n\n" + e.notification
+            content = "We failed to do wellness assessment for you.\n\n" + e.notification
 
         email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
         email_manager.send_email(email)
