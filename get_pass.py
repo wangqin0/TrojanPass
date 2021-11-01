@@ -132,7 +132,7 @@ class Passer:
             '/html/body/app-root/app-assessment-questions/main/section/section[8]/button').click()
 
         # finish assessment and wait loading page
-        self.driver.ele_with_wait('//*[@id="mat-checkbox-1-input"]').click()
+        self.driver.ele_with_wait(By.XPATH, '//*[@id="mat-checkbox-1-input"]').click()
 
         self.driver.ele_by_xpath('//*[@id="mat-checkbox-1"]/label/div').click()
 
