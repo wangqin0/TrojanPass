@@ -87,7 +87,9 @@ Optional: setup crontab, see below.
     - Note: use `echo` in macOS and `printf` on Linux
     - For example, on macOS 11.6, suppose the NET ID is `wq`, password is `foo`, Gmail account is `wangqin0.me@gmail.com`, Gmail password is `fool` open the Terminal and execute `echo '\n# Trojan Pass\nexport TROJAN_PASS_NETID="wq"\nexport TROJAN_PASS_PASSWORD="foo"\nexport TROJAN_PASS_GMAIL_ACCOUNT="wangqin0.me@gmail.com"\nexport TROJAN_PASS_GMAIL_PASSWORD="fool"\n' >> ~/.zshrc` 
   - Windows
-    - I don't use Windows, maybe you can take look at [about_Environment_Variables](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables) in Microsoft Docs.
+    - The py-dotenv helps Windows user to set up Environment Variables easily, all you need is a `.env` file inside the project folder.
+    You can take a look at the format in `.env.examples`.
+    - Also, you can set up environment variables manually, take look at [about_Environment_Variables](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables) in Microsoft Docs.
   - Notice that `<>` is NOT in the actual command; for security concerns, please don't hard code your password into the program.
 
 ### Install Prerequisites
@@ -97,9 +99,9 @@ Optional: setup crontab, see below.
 Firefox: `./setup_scripts/setup_firefox.sh`
 Chrome: `./setup_scripts/setup_chrome.sh`
 
-#### macOS
+#### macOS and Windows
 
-Download the browser and related chrome driver. Add the driver to path directory.  
+Download the browser and related chrome driver. Add the driver to path directory.
 
 ### Run task
 
@@ -108,7 +110,7 @@ Download the browser and related chrome driver. Add the driver to path directory
 - Run once: `xvfb-run python3 <project root>/main.py` (for example: `xvfb-run python3 ~/TrojanPass/main.py`), note that you need to manually set environment variables in `crontab -e`.
 - Run every day: Execute `cron -e` in shell then add following line: `20 15 * * * cd <path to TrojanPass> && xvfb-run python3 main.py &> ~/TrojanPass.log`, this will run task at 7:00 am every day and log is saved to `~/TrojanCheck.log`.
 
-#### macOS
+#### macOS and Windows
 
 Inside project, run once: `python3 main.py`.
 
