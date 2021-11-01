@@ -1,10 +1,11 @@
 import logging
 from pathlib import Path
-from utils import *
-
-from get_pass import Passer, Driver
 from dotenv import load_dotenv
-import send_email
+
+from send_email import EmailManager
+from get_pass import Passer, Driver
+from utils import *
+from errors import *
 
 
 def main():
@@ -30,23 +31,28 @@ def main():
     mail_password = os.environ.get('TROJAN_PASS_GMAIL_PASSWORD')
 
     # Firefox driver with headless mode on
-    driver = Driver()
+    email_manager = EmailManager(mail_account, mail_password)
 
     for net_id, net_pw in zip(net_ids, net_pws):
-        image_name = str_image(net_id)
-        logging.debug(f'TrojanPass started in dir={Path.cwd()}, output_image={image_name}')
+        recipient = usc_email_address_for(net_id)
+        email_title = "Trojan Pass"
+        content = ""
+        image_name = None
+        passer = Passer(net_id, net_pw)
 
-        passer = Passer(net_id, net_pw, driver=driver)
+        try:
+            content = passer.get_pass_and_reminder()
+            email_title = "Your Daily Trojan Pass"
+            image_name = str_image(net_id)
+        except IncorrectPasswordError as e:
+            logging.error(e.message)
+            content = "Your given password may be wrong, we cannot do Trojan Check for you."
+        except SelfAssessmentNotCompliantError as e:
+            logging.error(e.message)
+            content = "We failed to do wellness assessment for you.\n\n" + e.notification
 
-        remind_text = passer.get_pass_and_reminder()
-        logging.debug(f'{image_name} is saved and next_test_reminnder is {remind_text}')
-
-        send_email.send_from_gmail(os.getenv('TROJAN_PASS_NETID') + "@usc.edu",
-                                   "Your Daily Trojan Pass",
-                                   remind_text + "\n\nHave a good day! XD",
-                                   image_name,
-                                   mail_account,
-                                   mail_password)
+        email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
+        email_manager.send_email(email)
 
         logging.info(f"{image_name} is saved in {save_path} and sent to your mailbox")
 

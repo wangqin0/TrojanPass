@@ -1,1 +1,1 @@
-get_pass: python main.py
+worker: python main.py
