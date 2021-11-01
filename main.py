@@ -17,7 +17,7 @@ def main():
     save_path = os.environ.get('SAVE_PATH') or 'saved_passes'
     if not Path(save_path).exists():
         Path(save_path).mkdir(parents=True, exist_ok=False)
-        logging.info(f'directory {save_path} not exists and got created')
+        logging.info(f'Directory {save_path} not exists and got created')
 
     # simple environment variable detection
     if 'TROJAN_PASS_NETID' not in os.environ:
@@ -46,10 +46,10 @@ def main():
             image_name = str_image(net_id)
         except IncorrectPasswordError as e:
             logging.error(e.message)
-            content = "Your given password may be wrong, we cannot do trojan check for you."
+            content = "Your given password may be wrong, we cannot do Trojan Check for you."
         except SelfAssessmentNotCompliantError as e:
             logging.error(e.message)
-            content = "We failed to de self assessment for you.\n\n" + e.notification
+            content = "We failed to do wellness assessment for you.\n\n" + e.notification
 
         email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
         email_manager.send_email(email)
