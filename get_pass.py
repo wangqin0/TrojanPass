@@ -6,6 +6,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from utils import str_image
+from errors import *
 
 
 # Universal driver interface for Firefox or Chrome
@@ -36,10 +37,10 @@ class Driver:
     def ele_by_id(self, _id: str) -> WebElement:
         return self.driver.find_element_by_id(_id)
 
-    def ele_by_classname(self, class_name: str) -> WebElement:
+    def eles_by_classname(self, class_name: str) -> WebElement:
         return self.driver.find_elements_by_class_name(class_name)
 
-    def ele_with_wait(self, approach: By, locator: str, time_limit: int = 5) -> WebElement:
+    def ele_with_wait(self, approach: By, locator: str, time_limit: int = 10) -> WebElement:
         return WebDriverWait(self.driver, time_limit).until(
             expected_conditions.presence_of_element_located(
                 (approach, locator))
@@ -61,36 +62,26 @@ class Passer:
 
     def get_pass_and_reminder(self):
         logging.info(f"Attempt to run {self.driver.name()} with headless={self.driver.headless}")
+        logging.info(f"Get pass for net_id: {self.net_id}.")
 
         self.login()
 
-        if self.driver.ele_by_classname('day-pass-qr-code'):
-            logging.info("Have done wellness assessment today. Saving pass")
+        if self.driver.eles_by_classname('btn-begin-assessment-disabled'):
+            notification_text = self.driver.eles_by_classname('notification-message')[0].text
+            raise SelfAssessmentNotCompliantError(f'Not able to start wellness assessment for {self.net_id}.',
+                                                  notification_text)
 
-            next_test_remainder = self.driver.ele_by_xpath(
-                '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
+        if self.driver.eles_by_classname('btn-begin-assessment'):
+            self.self_assessment()
 
-            pass_element = self.driver.ele_by_xpath(
-                # '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
-                '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass/div')
+        logging.info("Done wellness assessment. Saving pass")
 
-            pass_element.screenshot(self.image_name)
-
-            return next_test_remainder
-
-        self.self_assessment()
-
-        pass_element = self.driver.ele_with_wait(By.XPATH,
-                                                 '/html/body/app-root/app-dashboard/main/div/section[1]/div/div[2]/app-day-pass')
-
-        logging.info("Wellness assessment Completed. Saving pass")
-
-        next_test_remainder = self.driver.ele_by_xpath(
-            '/html/body/app-root/app-dashboard/main/div/div[1]/div/div/div[2]').text
-
+        pass_element = self.driver.eles_by_classname('day-pass-wrapper')[0]
         pass_element.screenshot(self.image_name)
 
-        return next_test_remainder
+        notification = self.driver.eles_by_classname('notification-message')[0].text
+        logging.debug(f'{self.image_name} is saved and next_test_reminder is {notification}')
+        return notification
 
     def login(self):
         self.driver.get('https://trojancheck.usc.edu/login')
@@ -104,6 +95,9 @@ class Passer:
 
         # Login Button
         self.driver.ele_by_xpath('//*[@id="loginform"]/div[4]/button').click()
+
+        if self.driver.eles_by_classname("form-error"):
+            raise IncorrectPasswordError(f'Incorrect password for {self.net_id}')
 
         # Continue button
         self.driver.ele_with_wait(By.XPATH, "/html/body/app-root/app-consent-check/main/section/section/button").click()
@@ -132,9 +126,10 @@ class Passer:
             '/html/body/app-root/app-assessment-questions/main/section/section[8]/button').click()
 
         # finish assessment and wait loading page
-        self.driver.ele_with_wait(By.XPATH, '//*[@id="mat-checkbox-1-input"]').click()
-
-        self.driver.ele_by_xpath('//*[@id="mat-checkbox-1"]/label/div').click()
+        self.driver.ele_with_wait(By.XPATH, '//*[@id="mat-checkbox-1"]/label/div').click()
 
         self.driver.ele_by_xpath(
             '/html/body/app-root/app-assessment-review/main/section/section[11]/button').click()
+
+        # after assessment, back to home page
+        self.driver.get('https://trojancheck.usc.edu/dashboard')
