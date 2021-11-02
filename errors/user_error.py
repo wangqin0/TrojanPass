@@ -1,14 +1,16 @@
 class UserError(Exception):
-    def __init(self, message: str):
+    def __init__(self, message: str):
+        super().__init__()
         self.message = message
 
 
 class IncorrectPasswordError(UserError):
-    pass
+    def __init__(self, message: str, net_id: str):
+        super().__init__(message)
+        self.net_id = net_id
 
 
 class SelfAssessmentNotCompliantError(UserError):
     def __init__(self, message: str, notification: str):
-        super().__init__()
-        self.message = message
+        super().__init__(message)
         self.notification = notification
