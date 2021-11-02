@@ -45,11 +45,14 @@ def main():
             email_title = "Your Daily Trojan Pass"
             image_name = str_image(net_id)
         except IncorrectPasswordError as e:
-            logging.error(e.message)
+            logging.error(e.message + 'for ' + e.net_id)
             content = "Your given password may be wrong, we cannot do Trojan Check for you."
         except SelfAssessmentNotCompliantError as e:
             logging.error(e.message)
             content = "We failed to do wellness assessment for you.\n\n" + e.notification
+        except UnexpectedUrlError as e:
+            logging.error(f"Unexpected url: {e.url}. Unable to save pass. Exit.")
+            logging.error(f"Screenshot saved as {e.image_name}")
 
         email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
         email_manager.send_email(email)
