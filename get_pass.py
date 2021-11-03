@@ -57,6 +57,9 @@ class Driver:
     def quit(self):
         self.driver.quit()
 
+    def delete_all_cookies(self):
+        self.driver.delete_all_cookies()
+
 
 class Passer:
     def __init__(self, net_id: str, net_pw: str, driver=None, image_name: str = None, firefox: bool = True,
@@ -69,7 +72,8 @@ class Passer:
         self.driver = driver or Driver(firefox, headless)
 
     def __del__(self):
-        self.driver.quit()
+        if 'driver' in self.__dict__:
+            self.driver.quit()
 
     def get_pass_and_reminder(self) -> Optional[str]:
         logging.info(f"Attempt to run {self.driver.name()} with headless={self.driver.headless}")
