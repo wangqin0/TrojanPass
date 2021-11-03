@@ -71,10 +71,6 @@ class Passer:
         # recommend setting: Firefox headless or Chrome (without headless)
         self.driver = driver or Driver(firefox, headless)
 
-    def __del__(self):
-        if 'driver' in self.__dict__:
-            self.driver.quit()
-
     def get_pass_and_reminder(self) -> Optional[str]:
         logging.info(f"Attempt to run {self.driver.name()} with headless={self.driver.headless}")
         logging.info(f"Get pass for net_id: {self.net_id}.")
