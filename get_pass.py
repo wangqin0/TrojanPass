@@ -60,7 +60,7 @@ class Driver:
 
 class Passer:
     def __init__(self, net_id: str, net_pw: str, driver=None, image_name: str = None, firefox: bool = True,
-                 headless: bool = False):
+                 headless: bool = True):
         self.net_id = net_id
         self.net_pw = net_pw
         self.image_name = image_name or str_image(net_id)
