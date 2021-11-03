@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from utils import str_image
 from errors import *
+from selenium.common.exceptions import TimeoutException
 
 
 # Universal driver interface for Firefox or Chrome
@@ -26,6 +27,10 @@ class Driver:
                 options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             self.driver = webdriver.Chrome(options=options)
+
+    def __del__(self):
+        logging.info('Finish job, driver quits.')
+        self.driver.quit()
 
     def get(self, url: str):
         self.driver.get(url)
@@ -54,15 +59,12 @@ class Driver:
     def current_url_ends(self, suffix: str) -> bool:
         return self.url().endswith(suffix)
 
-    def quit(self):
-        self.driver.quit()
-
     def delete_all_cookies(self):
         self.driver.delete_all_cookies()
 
 
 class Passer:
-    def __init__(self, net_id: str, net_pw: str, driver=None, image_name: str = None, firefox: bool = True,
+    def __init__(self, net_id: str, net_pw: str, driver: Driver = None, image_name: str = None, firefox: bool = True,
                  headless: bool = True):
         self.net_id = net_id
         self.net_pw = net_pw
@@ -72,33 +74,34 @@ class Passer:
         self.driver = driver or Driver(firefox, headless)
 
     def get_pass_and_reminder(self) -> Optional[str]:
-        logging.info(f"Attempt to run {self.driver.name()} with headless={self.driver.headless}")
-        logging.info(f"Get pass for net_id: {self.net_id}.")
+        try:
+            logging.info(f"Attempt to run {self.driver.name()} with headless={self.driver.headless}")
+            logging.info(f"Get pass for net_id: {self.net_id}.")
 
-        self.login()
+            self.login()
 
-        if self.driver.eles_by_classname('btn-begin-assessment-disabled'):
-            notification_text = self.driver.eles_by_classname('notification-message')[0].text
-            raise SelfAssessmentNotCompliantError(f'Not able to start wellness assessment for {self.net_id}.',
-                                                  notification_text)
+            if self.driver.eles_by_classname('btn-begin-assessment-disabled'):
+                notification_text = self.driver.eles_by_classname('notification-message')[0].text
+                raise SelfAssessmentNotCompliantError(f'Not able to start wellness assessment for {self.net_id}.',
+                                                      notification_text)
 
-        if self.driver.eles_by_classname('btn-begin-assessment'):
-            self.self_assessment()
+            if self.driver.eles_by_classname('btn-begin-assessment'):
+                self.self_assessment()
 
-        logging.info("Done wellness assessment. Saving pass")
+            logging.info("Done wellness assessment. Saving pass")
 
-        if self.driver.current_url_ends('login'):
-            logging.info('Re login required.')
-            self.login(re_login=True)
+            if self.driver.current_url_ends('login'):
+                logging.info('Re login required.')
+                self.login(re_login=True)
 
-        if self.driver.current_url_ends('dashboard'):
-            pass_element = self.driver.eles_by_classname('day-pass-wrapper')[0]
-            pass_element.screenshot(self.image_name)
+            if self.driver.current_url_ends('dashboard'):
+                pass_element = self.driver.eles_by_classname('day-pass-wrapper')[0]
+                pass_element.screenshot(self.image_name)
 
-            notification = self.driver.eles_by_classname('notification-message')[0].text
-            logging.debug(f'{self.image_name} is saved and next_test_reminder is {notification}')
-            return notification
-        else:
+                notification = self.driver.eles_by_classname('notification-message')[0].text
+                logging.debug(f'{self.image_name} is saved and next_test_reminder is {notification}')
+                return notification
+        except TimeoutException:
             random_image_name = f"error{random.randint(201, 500)}.png"
             self.driver.driver.save_screenshot(random_image_name)
             raise UnexpectedUrlError(f'Unexpected url before save pass for {self.net_id}', self.driver.url(),

@@ -8,7 +8,7 @@ from utils import *
 from errors import *
 
 
-def main():
+def main(send_mail: bool = True):
     load_dotenv()
 
     logging.getLogger().setLevel(logging.INFO)
@@ -53,12 +53,14 @@ def main():
         except UnexpectedUrlError as e:
             logging.error(f"Unexpected url: {e.url}. Unable to save pass. Exit.")
             logging.error(f"Screenshot saved as {e.image_name}")
+        finally:
+            del passer.driver
 
-        email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
-        email_manager.send_email(email)
-
-        logging.info(f"{image_name} is saved in {save_path} and sent to your mailbox")
+        if send_mail:
+            email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
+            email_manager.send_email(email)
+            logging.info(f"{image_name} is saved in {save_path} and sent to your mailbox")
 
 
 if __name__ == "__main__":
-    main()
+    main(False)
