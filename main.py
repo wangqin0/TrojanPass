@@ -8,7 +8,7 @@ from utils import *
 from errors import *
 
 
-def main():
+def main(send_mail: bool = True):
     load_dotenv()
 
     logging.getLogger().setLevel(logging.INFO)
@@ -17,7 +17,7 @@ def main():
     save_path = os.environ.get('SAVE_PATH') or 'saved_passes'
     if not Path(save_path).exists():
         Path(save_path).mkdir(parents=True, exist_ok=False)
-        logging.info(f'directory {save_path} not exists and got created')
+        logging.info(f'Directory {save_path} not exists and got created')
 
     # simple environment variable detection
     if 'TROJAN_PASS_NETID' not in os.environ:
@@ -45,16 +45,21 @@ def main():
             email_title = "Your Daily Trojan Pass"
             image_name = str_image(net_id)
         except IncorrectPasswordError as e:
-            logging.error(e.message)
+            logging.error(e.message + 'for ' + e.net_id)
             content = "Your given password may be wrong, we cannot do Trojan Check for you."
         except SelfAssessmentNotCompliantError as e:
             logging.error(e.message)
             content = "We failed to do wellness assessment for you.\n\n" + e.notification
+        except UnexpectedUrlError as e:
+            logging.error(f"Unexpected url: {e.url}. Unable to save pass. Exit.")
+            logging.error(f"Screenshot saved as {e.image_name}")
+        finally:
+            del passer.driver
 
-        email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
-        email_manager.send_email(email)
-
-        logging.info(f"{image_name} is saved in {save_path} and sent to your mailbox")
+        if send_mail:
+            email = EmailManager.construct_email(mail_account, recipient, email_title, content, image_name)
+            email_manager.send_email(email)
+            logging.info(f"{image_name} is saved in {save_path} and sent to your mailbox")
 
 
 if __name__ == "__main__":

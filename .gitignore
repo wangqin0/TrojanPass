@@ -1,6 +1,7 @@
 # Project Specific
 saved_passes/
 *.log
+*.png
 
 # IntelliJ
 .idea/
