@@ -63,4 +63,4 @@ def main(send_mail: bool = True):
 
 
 if __name__ == "__main__":
-    main(False)
+    main()
