@@ -25,8 +25,8 @@ def main(send_mail: bool = True):
         logging.error("It is possible that you're using crontab and this requires further setup")
         exit(1)
 
-    net_ids = [net_id.strip() for net_id in os.environ.get('TROJAN_PASS_NETID').split(',')]
-    net_pws = [net_pw.strip() for net_pw in os.environ.get('TROJAN_PASS_PASSWORD').split(',')]
+    net_ids = [net_id.strip() for net_id in os.environ.get('TROJAN_PASS_NETID').split('|')]
+    net_pws = [net_pw.strip() for net_pw in os.environ.get('TROJAN_PASS_PASSWORD').split('|')]
     mail_account = os.environ.get('TROJAN_PASS_GMAIL_ACCOUNT')
     mail_password = os.environ.get('TROJAN_PASS_GMAIL_PASSWORD')
 
