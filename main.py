@@ -45,7 +45,7 @@ def main(send_mail: bool = True):
             email_title = "Your Daily Trojan Pass"
             image_name = str_image(net_id)
         except IncorrectPasswordError as e:
-            logging.error(e.message + 'for ' + e.net_id)
+            logging.error(e.message + ' for ' + e.net_id)
             content = "Your given password may be wrong, we cannot do Trojan Check for you."
         except SelfAssessmentNotCompliantError as e:
             logging.error(e.message)
