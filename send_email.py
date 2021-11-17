@@ -8,51 +8,51 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-# get Gmail credentials from system environment
-ACCOUNT = os.getenv('TROJAN_PASS_GMAIL_ACCOUNT')
-PASSWORD = os.getenv('TROJAN_PASS_GMAIL_PASSWORD')
-
 PORT = 465  # Gmail Outgoing Mail (SMTP) Server
 SMTP_SERVER = "smtp.gmail.com"
 
 
-def send_from_gmail(recipient, subject, body, attachment_filepath, account, password):
-    # Create a multipart message and set headers
-    message = MIMEMultipart()
-    message["From"] = account
-    message["To"] = recipient
-    message["Subject"] = subject
-    # message["Bcc"] = receiver_email  # Recommended for mass emails
+class EmailManager:
+    def __init__(self, account: str, password: str):
+        context = ssl.create_default_context()
+        self.account = account
+        self.server = smtplib.SMTP_SSL(SMTP_SERVER, PORT, context=context)
+        self.server.login(account, password)
 
-    # Add body to email
-    message.attach(MIMEText(body, "plain"))
+    def send_email(self, email: MIMEMultipart):
+        recipient = email['To']
+        self.server.sendmail(self.account, recipient, email.as_string())
+        logging.debug("Mail sent")
 
-    # Open PDF file in binary mode
-    with open(attachment_filepath, "rb") as attachment:
-        # Add file as application/octet-stream
-        # Email client can usually download this automatically as attachment
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(attachment.read())
+    @staticmethod
+    def construct_email(_from: str, _to: str, subject: str, content: str, attachment_dir: str = None) -> MIMEMultipart:
+        # Create a multipart message and set headers
+        email = MIMEMultipart()
+        email["From"] = _from
+        email["To"] = _to
+        email["Subject"] = subject
 
-    # Encode file in ASCII characters to send by email
-    encoders.encode_base64(part)
+        # Add body to email
+        email.attach(MIMEText(content, "plain"))
 
-    # Add header as key/value pair to attachment part
-    part.add_header(
-        "Content-Disposition",
-        f"attachment; filename= {attachment_filepath}",
-    )
+        if attachment_dir:
+            # Open PDF file in binary mode
+            with open(attachment_dir, "rb") as attachment:
+                # Add file as application/octet-stream
+                # Email client can usually download this automatically as attachment
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment.read())
 
-    # Add attachment to message and convert message to string
-    message.attach(part)
-    text = message.as_string()
+                # Encode file in ASCII characters to send by email
+                encoders.encode_base64(part)
 
-    logging.debug("Mail constructed, now sending")
+                # Add header as key/value pair to attachment part
+                part.add_header(
+                    "Content-Disposition",
+                    f"attachment; filename= {attachment_dir}",
+                )
 
-    # Log in to server using secure context and send email
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(account, password)
-        server.sendmail(message["From"], message["To"], text)
+                # Add attachment to message and convert message to string
+                email.attach(part)
 
-    logging.debug("Mail sent")
+        return email
