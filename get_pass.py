@@ -95,7 +95,7 @@ class Passer:
                 self.login(re_login=True)
 
             if self.driver.current_url_ends('dashboard'):
-                pass_element = self.driver.eles_by_classname('day-pass-wrapper')[0]
+                pass_element = self.driver.eles_by_classname('day-pass')[0]
                 pass_element.screenshot(self.image_name)
 
                 notification = self.driver.eles_by_classname('notification-message')[0].text
@@ -119,7 +119,7 @@ class Passer:
             self.driver.ele_by_id('password').send_keys(self.net_pw)
 
             # Login Button
-            self.driver.ele_by_xpath('//*[@id="loginform"]/div[4]/button').click()
+            self.driver.ele_by_xpath('/html/body/div/div/div[1]/div/div/div/div/form/div/button').click()
 
             if self.driver.eles_by_classname("form-error"):
                 raise IncorrectPasswordError('Incorrect password', self.net_id)
